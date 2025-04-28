@@ -187,6 +187,14 @@ class Example(mglw.WindowConfig):
 
         self.proj = glm.ortho(left, right, bottom, top, near, far)
         return self.proj * self.view
+    
+    def on_resize(self, width, height): # 窗口大小改变时，更新深度纹理和 FBO
+        self.window_size = (width, height)  # 更新自己的window_size！
+        self.depth_texture = self.ctx.depth_texture(self.window_size)
+        self.fbo = self.ctx.framebuffer(
+            color_attachments=[self.ctx.texture(self.window_size, 4)],
+            depth_attachment=self.depth_texture
+        )
 
     def on_mouse_drag_event(self, x, y, dx, dy):
         if self.drag_mode == 'rotate':
@@ -195,9 +203,6 @@ class Example(mglw.WindowConfig):
             # self.camera_rotation.y = glm.clamp(self.camera_rotation.y, -180.0, 180.0)
 
         elif self.drag_mode == 'pan':
-            # scale = self.camera_distance * 0.003  # 平移比例，跟随缩放远近
-            # self.camera_pan.x += dx * scale
-            # self.camera_pan.y -= dy * scale
             ortho_scale = self.camera_distance
             world_dx = dx / self.wnd.buffer_width * ortho_scale * 2
             world_dy = dy / self.wnd.buffer_height * ortho_scale * 2 / self.aspect_ratio
